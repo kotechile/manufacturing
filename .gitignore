@@ -1,0 +1,9 @@
+# Ignore virtual environment and dependencies
+**/node_modules/
+**/dist/
+**/venv/
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/*.log
+**/.env

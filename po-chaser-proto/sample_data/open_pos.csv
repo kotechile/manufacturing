@@ -1,0 +1,6 @@
+PO_NUMBER,LINE_NUM,SUPPLIER_NAME,SUPPLIER_CODE,PART_NUMBER,DESCRIPTION,ORDER_QTY,UOM,UNIT_PRICE,ORDER_DATE,PROMISED_DOCK_DATE,STATUS,NOTES
+PO-9021,1,Titan Metals Ltd,VEND-TITAN-01,4140-ROD-2IN,4140 Annealed Alloy Steel Rod 2in dia x 12ft,2500,LB,2.85,2026-11-10,2026-11-24,UNCONFIRMED,Critical raw material for machining batch #402. Dock date in 3 days.
+PO-8842,1,Apex Fasteners Inc.,VEND-APEX-09,BLT-GR8-HEX-05,Grade 8 Hex Cap Screws 1/2-13 x 2in,5000,EA,0.42,2026-11-12,2026-11-27,UNCONFIRMED,Standard assembly line replenishment. Dock date in 6 days. No ASN yet.
+PO-7731,1,Precision Gears Co.,VEND-PREC-04,GR-SPUR-44T,44-Tooth Spur Gear Ground Tooth ANSI-6,120,EA,48.50,2026-10-28,2026-11-23,DELAYED,Vendor emailed about heat-treat oven breakdown. Dock date in 2 days.
+PO-6612,1,Starlight Plastics,VEND-STAR-12,HSG-POLY-09,Polycarbonate Electronic Enclosure Housing,800,EA,12.20,2026-11-05,2026-12-04,ON_TRACK,Dock date in 13 days. First sample approved.
+PO-9104,1,Titan Metals Ltd,VEND-TITAN-01,6061-ALUM-BAR,6061-T6 Aluminum Rectangular Bar 1x3in,1800,LB,4.10,2026-11-15,2026-11-25,PARTIAL_SHIPPED,Vendor partial shipped 800 lbs under tracking #ODFL-4491029. Remaining 1000 lbs unscheduled. Dock in 4 days.

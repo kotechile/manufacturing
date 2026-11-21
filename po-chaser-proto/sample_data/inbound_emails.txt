@@ -1,0 +1,38 @@
+--- EMAIL 1 ---
+From: orders@titanmetals.example.com
+To: purchasing@mfg-corp.example.com
+Date: 2026-11-20 14:15:00
+Subject: Update regarding PO-9021 - 4140 Steel Rods
+Body:
+Hello Purchasing Team,
+We wanted to give you a heads-up that our secondary induction quench furnace had an emergency heating element failure yesterday afternoon. We are currently holding PO-9021 (4140 Rods). We hope to resume running over the weekend, but our current estimate puts shipment out by Wednesday 2026-11-26, which means delivery will slip beyond your November 24 dock date. We apologize for the inconvenience and will update you once maintenance completes tests.
+Best regards,
+Titan Metals Dispatch Desk
+
+--- EMAIL 2 ---
+From: dispatch@apexfasteners.example.com
+To: purchasing@mfg-corp.example.com
+Date: 2026-11-20 09:30:00
+Subject: Order Acknowledgement PO-8842
+Body:
+Thank you for your order PO-8842 for Grade 8 Hex Cap Screws. Your order is scheduled in our distribution warehouse queue for pick and pack on Monday Nov 24. ASN with freight tracking will follow automatically once palletized.
+Apex Fasteners Customer Portal
+
+--- EMAIL 3 ---
+From: sam.k@precisiongears.example.com
+To: purchasing@mfg-corp.example.com
+Date: 2026-11-19 16:45:00
+Subject: RE: Critical delivery status PO-7731 44T Spur Gears
+Body:
+Hi Team,
+Regrettably, the third-party heat-treater we use in Ohio had an audit shutdown and our gear blanks were delayed in transit back to our final grinding shop. We will miss the Nov 23 dock date. Earliest possible dock date is now Dec 2. Let us know if we should air-freight a partial run of 30 units.
+Sam Keller, Precision Gears Account Manager
+
+--- EMAIL 4 ---
+From: shipping@titanmetals.example.com
+To: purchasing@mfg-corp.example.com
+Date: 2026-11-20 11:00:00
+Subject: Shipment Notification: Partial PO-9104
+Body:
+Please be advised that 800 lbs of 6061-T6 Aluminum Bar on PO-9104 has shipped via Old Dominion Freight line tracking #ODFL-4491029. The remaining 1000 lbs is still on backorder awaiting extrusion billet replenishment.
+Titan Metals Logistics
