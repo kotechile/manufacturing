@@ -235,7 +235,9 @@ class HermesService:
 
         headers = {
             "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://manufacturing.aichieve.net",
+            "X-Title": "Hermes Supplier & PO Chaser",
         }
 
         payload = {
@@ -249,12 +251,15 @@ class HermesService:
         }
 
         base_url = HERMES_API_BASE.rstrip("/") + "/chat/completions"
-        async with httpx.AsyncClient(timeout=45.0) as client:
+        async with httpx.AsyncClient(timeout=60.0) as client:
             resp = await client.post(base_url, headers=headers, json=payload)
             resp.raise_for_status()
             data = resp.json()
             raw_content = data["choices"][0]["message"]["content"]
-            parsed_json = json.loads(raw_content)
+            # Clean possible markdown code fences
+            cleaned = re.sub(r"^```(?:json)?\s*", "", raw_content.strip(), flags=re.MULTILINE)
+            cleaned = re.sub(r"\s*```$", "", cleaned.strip())
+            parsed_json = json.loads(cleaned)
             return ChaseResponse.model_validate(parsed_json)
 
     def _run_deterministic_reasoner(self, req: ChaseRequest) -> ChaseResponse:
