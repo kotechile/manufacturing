@@ -8,6 +8,7 @@ interface LeftPanelProps {
   emailsRaw: string;
   setEmailsRaw: (val: string) => void;
   onLoadSample: () => void;
+  onLoadSapSample: () => void;
   onChase: () => void;
   isLoading: boolean;
   vaultDocs: VaultDocument[];
@@ -20,6 +21,7 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   emailsRaw,
   setEmailsRaw,
   onLoadSample,
+  onLoadSapSample,
   onChase,
   isLoading,
   vaultDocs,
@@ -28,12 +30,12 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
   const [activeTab, setActiveTab] = useState<'inputs' | 'vault'>('inputs');
   const [isVaultExpanded, setIsVaultExpanded] = useState(false);
 
-  const poRowCount = posRaw.trim() ? posRaw.trim().split('\n').length - 1 : 0;
+  const poRowCount = posRaw.trim() ? posRaw.trim().split('\n').filter(l => !l.startsWith('---') && l.trim()).length - 1 : 0;
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-2xl flex flex-col h-full shadow-md overflow-hidden">
       {/* Tab bar & Quick Actions */}
-      <div className="px-4 py-3 bg-slate-850 border-b border-slate-800 flex items-center justify-between gap-2">
+      <div className="px-4 py-3 bg-slate-850 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center space-x-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
           <button
             onClick={() => setActiveTab('inputs')}
@@ -58,14 +60,24 @@ export const LeftPanel: React.FC<LeftPanelProps> = ({
           </button>
         </div>
 
-        <button
-          onClick={onLoadSample}
-          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium shadow-sm transition-all transform active:scale-95"
-          title="Pre-loads 5 realistic sample manufacturing POs & 4 vendor delay/ASN emails"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Load Sample Mfg Data</span>
-        </button>
+        <div className="flex items-center space-x-1.5">
+          <button
+            onClick={onLoadSample}
+            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium shadow-sm transition-all transform active:scale-95"
+            title="Pre-loads standard CSV sample"
+          >
+            <Sparkles className="w-3 h-3" />
+            <span>CSV Sample</span>
+          </button>
+          <button
+            onClick={onLoadSapSample}
+            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium shadow-sm transition-all transform active:scale-95"
+            title="Pre-loads raw SAP ALV Grid export with pipes and DD.MM.YYYY dates"
+          >
+            <FileText className="w-3 h-3" />
+            <span>SAP ALV Sample</span>
+          </button>
+        </div>
       </div>
 
       {/* Main Content Area */}

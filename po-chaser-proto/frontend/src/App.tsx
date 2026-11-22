@@ -56,9 +56,29 @@ export const App: React.FC = () => {
       const data = await fetchSampleData();
       setPosRaw(data.pos_raw);
       setEmailsRaw(data.emails_raw);
-      showToast('Loaded 5 sample manufacturing POs & 4 vendor delay snippets', 'info');
+      showToast('Loaded 5 sample manufacturing POs (CSV format)', 'info');
     } catch (err: any) {
       setError(`Failed to load sample data: ${err.message}`);
+    }
+  };
+
+  const handleLoadSapSample = async () => {
+    try {
+      const data = await fetchSampleData();
+      const sapAlvText = `---------------------------------------------------------------------------------------------------------
+| Purch.Doc. | Item | Vendor Name       | Material     | Short Text              | Deliv.Date | Stat        |
+---------------------------------------------------------------------------------------------------------
+| 4500019021 | 0010 | Titan Metals Ltd  | 4140-ROD-2IN | 4140 Annealed Steel Rod | 24.11.2026 | Unconfirmed |
+| 4500018842 | 0010 | Apex Fasteners    | BLT-GR8-05   | Grade 8 Hex Screws      | 27.11.2026 | Open        |
+| 4500017731 | 0010 | Precision Gears   | GR-SPUR-44T  | 44-Tooth Spur Gear      | 23.11.2026 | Delayed     |
+| 4500016612 | 0010 | Starlight Plastics| HSG-POLY-09  | Polycarbonate Housing   | 04.12.2026 | Confirmed   |
+| 4500019104 | 0010 | Titan Metals Ltd  | 6061-ALUM    | 6061-T6 Aluminum Bar    | 25.11.2026 | Partial     |
+---------------------------------------------------------------------------------------------------------`;
+      setPosRaw(sapAlvText);
+      setEmailsRaw(data.emails_raw);
+      showToast('Loaded SAP ALV Grid sample (pipes, DD.MM.YYYY dates, German/English headers)', 'info');
+    } catch (err: any) {
+      setError(`Failed to load SAP sample: ${err.message}`);
     }
   };
 
@@ -131,6 +151,7 @@ export const App: React.FC = () => {
             emailsRaw={emailsRaw}
             setEmailsRaw={setEmailsRaw}
             onLoadSample={handleLoadSample}
+            onLoadSapSample={handleLoadSapSample}
             onChase={handleChase}
             isLoading={isLoading}
             vaultDocs={vaultDocs}

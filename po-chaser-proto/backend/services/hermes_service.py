@@ -28,22 +28,142 @@ class HermesService:
             return self.skill_file.read_text(encoding="utf-8")
         return "You are an autonomous Supplier and PO Chaser agent for manufacturing."
 
+    def normalize_date(self, val: str) -> str:
+        """Normalizes various SAP, Excel, and international date formats to YYYY-MM-DD."""
+        val = val.strip()
+        if not val:
+            return ""
+        # Format: DD.MM.YYYY (SAP European standard)
+        m = re.match(r"^(\d{1,2})\.(\d{1,2})\.(\d{4})$", val)
+        if m:
+            d, month, y = m.groups()
+            return f"{y}-{int(month):02d}-{int(d):02d}"
+        # Format: MM/DD/YYYY (SAP US standard)
+        m = re.match(r"^(\d{1,2})/(\d{1,2})/(\d{4})$", val)
+        if m:
+            month, d, y = m.groups()
+            return f"{y}-{int(month):02d}-{int(d):02d}"
+        # Format: YYYYMMDD (SAP compact numeric)
+        m = re.match(r"^(\d{4})(\d{2})(\d{2})$", val)
+        if m:
+            y, month, d = m.groups()
+            return f"{y}-{month}-{d}"
+        # Format: YYYY-MM-DD
+        m = re.match(r"^(\d{4})-(\d{1,2})-(\d{1,2})$", val)
+        if m:
+            y, month, d = m.groups()
+            return f"{y}-{int(month):02d}-{int(d):02d}"
+        # Fallback date parsing
+        for fmt in ("%d-%b-%Y", "%d/%m/%Y", "%Y/%m/%d", "%b %d, %Y"):
+            try:
+                dt = datetime.strptime(val, fmt)
+                return dt.strftime("%Y-%m-%d")
+            except ValueError:
+                pass
+        return val
+
     def parse_pos(self, pos_raw: str) -> List[Dict[str, str]]:
-        """Parses CSV or TSV raw PO data."""
-        lines = [line.strip() for line in pos_raw.strip().splitlines() if line.strip()]
-        if not lines:
+        """Parses CSV, TSV, SAP ALV grid exports, pipe tables, or semi-colon delimited data."""
+        raw_lines = [l.strip() for l in pos_raw.strip().splitlines() if l.strip()]
+        if not raw_lines:
+            return []
+
+        # Filter decorative horizontal separator lines from SAP ALV grids (e.g. |---| or +---+ or --------)
+        cleaned_lines = []
+        for line in raw_lines:
+            if re.match(r"^[\s\|\+\-\=\_]+$", line):
+                continue
+            # If line is pipe-delimited ALV grid: | col1 | col2 |
+            if line.startswith("|") and line.endswith("|"):
+                parts = [p.strip() for p in line.split("|")[1:-1]]
+                cleaned_lines.append("\t".join(parts))
+            elif line.startswith("|"):
+                parts = [p.strip() for p in line.split("|") if p.strip()]
+                cleaned_lines.append("\t".join(parts))
+            else:
+                cleaned_lines.append(line)
+
+        if not cleaned_lines:
             return []
 
         # Detect delimiter
-        first_line = lines[0]
-        delimiter = "\t" if "\t" in first_line else ","
+        first_line = cleaned_lines[0]
+        if "\t" in first_line:
+            delimiter = "\t"
+        elif ";" in first_line:
+            delimiter = ";"
+        elif "|" in first_line:
+            delimiter = "|"
+        else:
+            delimiter = ","
 
-        reader = csv.DictReader(io.StringIO("\n".join(lines)), delimiter=delimiter)
-        # Normalize keys to uppercase stripped
+        reader = csv.DictReader(io.StringIO("\n".join(cleaned_lines)), delimiter=delimiter)
+
+        # Field Aliases Mapping Table for SAP (Technical, English, German)
+        PO_ALIASES = {
+            "EBELN", "PURCH.DOC.", "PURCHASING DOCUMENT", "PURCHASE ORDER", "ORDER",
+            "PO_NUMBER", "PO NUMBER", "PO #", "PO", "DOCUMENT", "BESTELLUNG", "AUFTRAG"
+        }
+        SUPPLIER_ALIASES = {
+            "LIFNR", "NAME1", "VENDOR NAME", "VENDOR", "SUPPLIER NAME", "SUPPLIER",
+            "LIEFERANT", "PARTNER", "NAME", "CREDITOR"
+        }
+        PART_ALIASES = {
+            "MATNR", "MATERIAL", "PART NUMBER", "PART_NUMBER", "PART", "ITEM NO",
+            "ITEM NUMBER", "ARTIKEL", "MATERIAL NUMBER"
+        }
+        DESC_ALIASES = {
+            "TXZ01", "SHORT TEXT", "DESCRIPTION", "ITEM DESCRIPTION", "BEZEICHNUNG",
+            "TEXT", "MATERIAL DESCRIPTION", "MAKTX", "SPECIFICATION"
+        }
+        DATE_ALIASES = {
+            "EINDT", "DELIV.DATE", "DELIV. DATE", "DELIVERY DATE", "DOCK DATE",
+            "PROMISED_DOCK_DATE", "LIEFERDATUM", "STAT.DEL.DATE", "DUE DATE",
+            "DELIVERY_DATE", "DOCK_DATE", "DATE"
+        }
+        STATUS_ALIASES = {
+            "STAT", "STATUS", "DELIVERY STATUS", "FREIGABESTATUS", "STATE", "PO STATUS"
+        }
+        QTY_ALIASES = {
+            "MENGE", "QUANTITY", "ORDER QTY", "QTY", "OFFENE MENGE", "BSTMG", "OPEN QTY"
+        }
+
         pos = []
         for row in reader:
-            normalized = {k.strip().upper(): v.strip() if v else "" for k, v in row.items() if k}
-            pos.append(normalized)
+            if not row or not any(row.values()):
+                continue
+            normalized_row = {k.strip().upper(): v.strip() if v else "" for k, v in row.items() if k}
+
+            canonical: Dict[str, str] = {}
+            for k, v in normalized_row.items():
+                clean_k = re.sub(r"[^\w\.\s]", "", k).strip()
+                if clean_k in PO_ALIASES:
+                    canonical["PO_NUMBER"] = v
+                elif clean_k in SUPPLIER_ALIASES:
+                    canonical["SUPPLIER_NAME"] = v
+                elif clean_k in PART_ALIASES:
+                    canonical["PART_NUMBER"] = v
+                elif clean_k in DESC_ALIASES:
+                    canonical["DESCRIPTION"] = v
+                elif clean_k in DATE_ALIASES:
+                    canonical["PROMISED_DOCK_DATE"] = self.normalize_date(v)
+                elif clean_k in STATUS_ALIASES:
+                    canonical["STATUS"] = v
+                elif clean_k in QTY_ALIASES:
+                    canonical["ORDER_QTY"] = v
+                else:
+                    canonical[k] = v
+
+            # Fill defaults if missing
+            if "PO_NUMBER" not in canonical:
+                first_val = list(normalized_row.values())[0] if normalized_row else "UNKNOWN"
+                canonical["PO_NUMBER"] = first_val
+            if "SUPPLIER_NAME" not in canonical:
+                canonical["SUPPLIER_NAME"] = "Unknown Supplier"
+            if "PROMISED_DOCK_DATE" in canonical:
+                canonical["PROMISED_DOCK_DATE"] = self.normalize_date(canonical["PROMISED_DOCK_DATE"])
+
+            pos.append(canonical)
         return pos
 
     def parse_emails(self, emails_raw: str) -> List[Dict[str, str]]:

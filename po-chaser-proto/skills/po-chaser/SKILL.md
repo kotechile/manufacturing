@@ -88,8 +88,10 @@ You continuously read:
 
 ## 3. Step-by-Step Execution Workflow
 
-### Step 1: Parse & Match
-- Extract each open PO from `pos_raw`.
+### Step 1: Parse & Match (Universal ERP & SAP Ingestion)
+- Extract each open PO from `pos_raw`. Be resilient to variable formats:
+  - Handle SAP ALV grid exports (`| Purch.Doc. | Item | Vendor | Material | Deliv.Date |`), German SAP technical field names (`EBELN`, `LIFNR`, `MATNR`, `TXZ01`, `EINDT`, `MENGE`, `STAT`), or arbitrary tab/comma/pipe dumps.
+  - Automatically parse European (`DD.MM.YYYY`), US (`MM/DD/YYYY`), compact numeric (`YYYYMMDD`), and ISO date formats into `YYYY-MM-DD`.
 - Search `emails_raw` for references matching the PO number, part numbers, or supplier name.
 - Map the supplier to their vendor profile in `vault/suppliers/<supplier-slug>.md` (e.g., `titan-metals.md`, `apex-fasteners.md`).
 
